@@ -75,11 +75,13 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 def generate_images(video_file, output_folder, lock):
     media_info = MediaInfo.parse(video_file)
     vf_parameters = "fps=fps={}:round=up,scale=w=320:h=240:force_original_aspect_ratio=decrease".format(round(1 / PLEX_BIF_FRAME_INTERVAL, 6))
+    dynamic_range = "SDR"
     
     # Check if we have a HDR Format. Note: Sometimes it can be returned as "None" (string) hence the check for None type or "None" (String)
     if media_info.video_tracks[0].hdr_format != "None" and media_info.video_tracks[0].hdr_format is not None:
         vf_parameters = "fps=fps={}:round=up,zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p,scale=w=320:h=240:force_original_aspect_ratio=decrease".format(round(1 / PLEX_BIF_FRAME_INTERVAL, 6))
-
+        dynamic_range = "HDR"
+        
     args = [
         "/usr/bin/ffmpeg", "-loglevel", "info", "-skip_frame:v", "nokey", "-threads:0", "1", "-i",
         video_file, "-an", "-sn", "-dn", "-q:v", str(THUMBNAIL_QUALITY),
@@ -106,7 +108,7 @@ def generate_images(video_file, output_folder, lock):
     if proc.returncode != 0:
         err_lines = err.decode('utf-8').split('\n')[-5:]
         logger.error(err_lines)
-        raise Exception('Problem trying to ffmpeg images for {}'.format(video_file))
+        raise Exception('Problem trying to generate images for {}'.format(os.path.basename(video_file)))
 
     # Speed
     end = time.time()
@@ -114,7 +116,7 @@ def generate_images(video_file, output_folder, lock):
     speed = re.findall('speed= ?([0-9]+\.?[0-9]*|\.[0-9]+)x', err.decode('utf-8'))
     if speed:
         speed = speed[-1]
-    logger.info('Generated Video Preview for {} HW={} TIME={}seconds SPEED={}x '.format(video_file, hw, seconds, speed))
+    logger.info('Generated Video Preview for {}\n| HW={} | {} | TIME={}s | SPEED={}x |'.format(os.path.basename(video_file), hw, dynamic_range, seconds, speed))
 
     # Optimize and Rename Images
     for image in glob.glob('{}/img*.jpg'.format(output_folder)):
@@ -240,7 +242,7 @@ if __name__ == '__main__':
     logger.remove()  # Remove default 'stderr' handler
     # We need to specify end=''" as log message already ends with \n (thus the lambda function)
     # Also forcing 'colorize=True' otherwise Loguru won't recognize that the sink support colors
-    logger.add(lambda m: console.print('\n%s' % m, end=""), colorize=True)
+    logger.add(lambda m: console.print('\n%s' % m, end=""), colorize=True, format="{message}")
 
     if not os.path.exists(PLEX_LOCAL_MEDIA_PATH):
         logger.error('%s does not exist, please edit PLEX_LOCAL_MEDIA_PATH variable' % PLEX_LOCAL_MEDIA_PATH)
