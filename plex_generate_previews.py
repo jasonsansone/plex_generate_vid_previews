@@ -212,6 +212,20 @@ def run():
 
     plex = PlexServer(PLEX_URL, PLEX_TOKEN, session=sess)
 
+    # Refresh Library before Processing
+    logger.info("Beginning library scan")
+    plex.library.update()
+    while len(plex.activities) != 0:
+        logger.info("Waiting on library scan to complete...")
+        time.sleep(30)
+    logger.info("Library scan complete")
+    logger.info("Beginning to clean bundles")
+    plex.library.cleanBundles()
+    while len(plex.activities) != 0:
+        logger.info("Waiting on bundle cleaning to complete...")
+        time.sleep(30)
+    logger.info("Cleaning bundles complete")
+    
     # Get all Movies
     logger.info('Getting Movies from Plex')
     movies = [m.key for m in plex.library.search(libtype='movie')]
