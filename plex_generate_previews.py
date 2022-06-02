@@ -213,25 +213,25 @@ def run():
     plex = PlexServer(PLEX_URL, PLEX_TOKEN, session=sess)
 
     # Refresh Library before Processing
-    logger.info("Beginning library scan")
+    logger.info("Beginning library scan.")
     plex.library.update()
     while len(plex.activities) != 0:
         logger.info("Waiting on library scan to complete...")
         time.sleep(30)
-    logger.info("Library scan complete")
-    logger.info("Beginning to clean bundles")
+    logger.info("Library scan complete.")
+    logger.info("Beginning to clean bundles.")
     plex.library.cleanBundles()
     while len(plex.activities) != 0:
         logger.info("Waiting on bundle cleaning to complete...")
         time.sleep(30)
-    logger.info("Cleaning bundles complete")
+    logger.info("Cleaning bundles complete.")
     
-    # Get Media from Plex
-    logger.info('Getting Media from Plex')
+    # Get media from Plex
+    logger.info('Begin getting information from Plex.')
     videos = [m.key for m in plex.library.search(libtype='movie')]
     videos = videos + [m.key for m in plex.library.search(libtype='episode')]
     videos.sort(reverse=True)
-    logger.info('Got {} Media from Plex', len(videos))
+    logger.info('Found {} media files in Plex.', len(videos))
 
     m = multiprocessing.Manager()
     lock = m.Lock()
@@ -248,7 +248,7 @@ if __name__ == '__main__':
     logger.remove()  # Remove default 'stderr' handler
     # We need to specify end=''" as log message already ends with \n (thus the lambda function)
     # Also forcing 'colorize=True' otherwise Loguru won't recognize that the sink support colors
-    logger.add(lambda m: console.print('\n%s' % m, end=""), colorize=True, format="{message}")
+    logger.add(lambda m: console.print('%s' % m, end=""), colorize=True, format="{message}")
 
     if not os.path.exists(PLEX_LOCAL_MEDIA_PATH):
         logger.error('%s does not exist, please edit PLEX_LOCAL_MEDIA_PATH variable' % PLEX_LOCAL_MEDIA_PATH)
