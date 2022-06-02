@@ -226,25 +226,17 @@ def run():
         time.sleep(30)
     logger.info("Cleaning bundles complete")
     
-    # Get all Movies
-    logger.info('Getting Movies from Plex')
-    movies = [m.key for m in plex.library.search(libtype='movie')]
-    logger.info('Got {} Movies from Plex', len(movies))
+    # Get Media from Plex
+    logger.info('Getting Media from Plex')
+    videos = [m.key for m in plex.library.search(libtype='movie')]
+    videos = videos + [m.key for m in plex.library.search(libtype='episode')]
+    videos.sort(reverse=True)
+    logger.info('Got {} Media from Plex', len(videos))
 
     m = multiprocessing.Manager()
     lock = m.Lock()
 
-    futures = [process_pool.submit(process_item, key, lock) for key in movies]
-    with Progress(SpinnerColumn(), *Progress.get_default_columns(), MofNCompleteColumn(), console=console) as progress:
-        for future in progress.track(futures):
-            future.result()
-
-    # Get all Episodes
-    logger.info('Getting Episodes from Plex')
-    episodes = [m.key for m in plex.library.search(libtype='episode')]
-    logger.info('Got {} Episodes from Plex', len(episodes))
-
-    futures = [process_pool.submit(process_item, key, lock) for key in episodes]
+    futures = [process_pool.submit(process_item, key, lock) for key in videos]
     with Progress(SpinnerColumn(), *Progress.get_default_columns(), MofNCompleteColumn(), console=console) as progress:
         for future in progress.track(futures):
             future.result()
