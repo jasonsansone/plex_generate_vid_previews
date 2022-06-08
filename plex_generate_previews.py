@@ -116,7 +116,7 @@ def generate_images(video_file, output_folder, lock):
     speed = re.findall('speed= ?([0-9]+\.?[0-9]*|\.[0-9]+)x', err.decode('utf-8'))
     if speed:
         speed = speed[-1]
-    logger.info('Generated Video Preview for {}\n| HW={} | {} | TIME={}s | SPEED={}x |'.format(os.path.basename(video_file), hw, dynamic_range, seconds, speed))
+    logger.info('\nGenerated Video Preview for {}\n| HW={} | {} | TIME={}s | SPEED={}x |'.format(os.path.basename(video_file), hw, dynamic_range, seconds, speed))
 
     # Optimize and Rename Images
     for image in glob.glob('{}/img*.jpg'.format(output_folder)):
@@ -252,15 +252,15 @@ if __name__ == '__main__':
 
     if not os.path.exists(PLEX_LOCAL_MEDIA_PATH):
         logger.error('%s does not exist, please edit PLEX_LOCAL_MEDIA_PATH variable' % PLEX_LOCAL_MEDIA_PATH)
-        exit(1)
+        sys.exit(1)
 
     if 'xxxxxx' in PLEX_URL:
         logger.error('Please update the PLEX_URL variable within this script')
-        exit(1)
+        sys.exit(1)
 
     if 'xxxxxx' in PLEX_TOKEN:
         logger.error('Please update the PLEX_TOKEN variable within this script')
-        exit(1)
+        sys.exit(1)
 
      try:
         # Clean TMP Folder
