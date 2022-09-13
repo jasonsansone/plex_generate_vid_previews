@@ -225,6 +225,12 @@ def run():
         logger.info("Waiting on bundle cleaning to complete...")
         time.sleep(30)
     logger.info("Cleaning bundles complete.")
+    logger.info("Beginning to optimize.")
+    plex.library.optimize()
+    while len(plex.activities) != 0:
+        logger.info("Waiting on optimization to complete...")
+        time.sleep(30)
+    logger.info("Optimization complete.")
     
     # Get media from Plex
     logger.info('Begin getting information from Plex.')
